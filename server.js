@@ -1,5 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt-nodejs')
+const cors = require('cors');
+
 let database = {
   users: [
     {
@@ -25,6 +27,7 @@ let database = {
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/healthcheck', (req, res) => {
   res.status(200).send('App is running');
@@ -37,7 +40,7 @@ app.get('/', (req, res) => {
 app.post('/signin', (req, res) => {
   if (req.body.email === database.users[0].email &&
       req.body.password === database.users[0].password) {
-        res.json('success');
+        res.json(database.users[0]);
   } else {
     res.status(400).json('error logging in')
   }
@@ -45,9 +48,6 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  bcrypt.hash(password, null, null, function(err, hash) {
-    console.log(hash);
-  });
   database.idCounter += 1;
   database.users.push({
     id: database.idCounter.toString(),
