@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt-nodejs')
 const cors = require('cors');
 const knex = require('knex');
 
+const register = require('./controllers/register');
+const signIn = require('./controllers/signin');
+const profile = require('./controllers/profile');
+const image = require('./controllers/image');
 
 const db = knex({
   client: 'pg',
@@ -30,74 +34,16 @@ app.get('/', (req, res) => {
   .then(data => res.json(data))
 })
 
-app.post('/signin', (req, res) => {
-  return db.select('email', 'hash').from('login')
-  .where('email', '=', req.body.email)
-  .then(data => {
-    const isValid = bcrypt.compareSync(req.body.password, data[0].hash);
-    if (isValid) {
-      return db.select('*').from('users')
-      .where('email', '=', req.body.email)
-      .then(user => {
-        res.json(user[0])
-      })
-      .catch(err =>  res.status(400).json('Unable to get user'))
-    } else {
-      res.status(400).json('Wrong credentials')
-    }
-    })
-    .catch(err =>  res.status(400).json('Wrong credentials'))
-})
+app.post('/signin', (req, res) => signIn.handleSignIn(req, res, db, bcrypt))
 
 // TODO: do express routes need a return? do db calls need to be returned?
-app.post('/register', (req, res) => {
-  const { name, email, password } = req.body;
-  var hash = bcrypt.hashSync(password);
-  db.transaction(trx => {
-    trx.insert({ hash, email })
-    .into('login')
-    .returning('email')
-    .then(loginEmail => {
-      return trx('users')
-      .returning('*')
-      .insert({
-        email: loginEmail[0].email,
-        name: name,
-        joined: new Date()
-      })
-      .then(user => {
-        res.json(user[0]);
-      })
-    })
-    .then(trx.commit)
-    .catch(trx.rollback)
-  }).catch(err => res.status(400).json('Unable To Register'));
-})
+app.post('/register', (req, res) => register.handleRegister(req, res, db, bcrypt))
 
 // TODO: Maybe improve that a tiny bit
 // TODO: extract repeated code to a function
-app.get('/profile/:id', (req, res) => {
-  const { id } = req.params;
-  db.select('*').from('users').where({id})
-  .then(user => {
-    if (user.length) {
-      res.json(user[0]);
-    } else {
-      res.status(400).json('User Not Found')
-    }
-  })
-  .catch(err => res.status(404).json('Error getting user'));
-})
+app.get('/profile/:id', (req, res) => profile.handleProfileGet(req, res, db))
 
-app.put('/image', (req, res) => {
-  const { id } = req.body;
-  db('users').where('id', '=', id)
-  .increment('entries', 1)
-  .returning('entries')
-  .then(entries => {
-    res.json(entries[0].entries);
-  })
-})
+app.put('/image', (req, res) => image.handleImage(req, res, db))
 
 app.listen(3000, () => {
   console.log('App is running on port 3000');
