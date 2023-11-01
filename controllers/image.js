@@ -1,20 +1,20 @@
-const { ClarifaiStub, grpc } = require("clarifai-nodejs-grpc");
+const { ClarifaiStub, grpc } = require('clarifai-nodejs-grpc');
 
 const stub = ClarifaiStub.grpc();
 
 const metadata = new grpc.Metadata();
-metadata.set("authorization", "Key 31fa86a9207c49138676d739a2934e16");
+metadata.set('authorization', `Key ${process.env.CLARIFAI_API_KEY}`);
 
 const handleAPICall = (req, res) => {
-  const USER_ID = 'ilanvys';
-  const APP_ID = 'facerecognizer';
+  const USER_ID = process.env.USER_ID;
+  const APP_ID = process.env.APP_ID;
   const IMAGE_URL = req.body.input;
   const MODEL_ID = 'face-detection';
   stub.PostModelOutputs(
     {
         user_app_id: {
-            "user_id": USER_ID,
-            "app_id": APP_ID
+            'user_id': USER_ID,
+            'app_id': APP_ID
         },
         model_id: MODEL_ID,
         inputs: [
@@ -27,7 +27,7 @@ const handleAPICall = (req, res) => {
             throw new Error(err);
         }
         if (response.status.code !== 10000) {
-            throw new Error("Post model outputs failed, status: " + response.status.description);
+            throw new Error('Post model outputs failed, status: ' + response.status.description);
         }
         res.json(response)
     }
