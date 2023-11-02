@@ -13,7 +13,7 @@ const validateRegistrationParams = (req, res) => {
   }
 
   if (!validator.isLength(password, { min: 6 })) {
-    return res.status(400).json('Password must be at least 4 characters long');
+    return res.status(400).json('Password must be at least 6 characters long');
   }
 
   return null;
