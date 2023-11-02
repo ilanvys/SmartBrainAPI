@@ -19,16 +19,10 @@ app.get('/healthcheck', (req, res) => {
 })
 
 app.post('/signin', (req, res) => signIn.handleSignIn(req, res, db, bcrypt))
-
-// TODO: do express routes need a return? do db calls need to be returned?
 app.post('/register', (req, res) => register.handleRegister(req, res, db, bcrypt))
-
-// TODO: Maybe improve that a tiny bit
-// TODO: extract repeated code to a function
 app.get('/profile/:id', (req, res) => profile.handleProfileGet(req, res, db))
-
 app.put('/image', (req, res) => image.handleImage(req, res, db))
-app.post('/imageurl', (req, res) => image.handleAPICall(req, res))
+app.post('/imageurl', (req, res) => image.handleAPICalls(req, res))
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`App is running on port ${process.env.PORT}`);
