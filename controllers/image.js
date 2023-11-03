@@ -27,7 +27,7 @@ const handleModelCall = (modelId, imageUrl) => {
           if (err) {
               reject(err);
           }
-          if (response.status.code !== 10000) {
+          if (response?.status?.code !== 10000) {
               reject(new Error('Post model outputs failed, status: ' + response.status.description));
           }
           resolve(response);
